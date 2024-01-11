@@ -10,9 +10,9 @@ import time
 
 def main():
     parser = argparse.ArgumentParser(description="Monitor log and extract counter values.")
-    parser.add_argument("process_id", type=int, help="The process ID to monitor.")
-    parser.add_argument("log_path", type=str, help="The path to the log file.")
-    parser.add_argument("output_log_path", type=str, help="The path to the output log file.")
+    parser.add_argument("--process_id", type=int, help="The process ID to monitor.")
+    parser.add_argument("--log_path", type=str, help="The path to the log file.")
+    parser.add_argument("--output_log_path", type=str, help="The path to the output log file.")
     args = parser.parse_args()
 
     logging.basicConfig(
