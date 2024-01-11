@@ -16,6 +16,10 @@ Options:
 EOT
 }
 
+cleanup() {
+  rm -f "$tmp_sql_script"
+}
+
 num_rows=1000000
 yb_root=""
 while [[ $# -gt 0 ]]; do
@@ -52,17 +56,27 @@ if [[ ! -f $yb_root/bin/yb-ctl ]]; then
   exit 1
 fi
 
+rows_per_group=10000
+num_groups=$(( num_rows / rows_per_group ))
+effective_num_rows=$(( num_groups * rows_per_group ))
+echo "Number of rows: $effective_num_rows"
+if [[ $effective_num_rows -ne $num_rows ]]; then
+  echo >&2 "Warning: --num_rows specified as $num_rows"
+fi
 log_dir=~/logs/ysql_bulk_load
 mkdir -p "$log_dir"
 timestamp=$( date +%Y-%m-%dT%H_%M_%S )
 log_path=$log_dir/ysql_bulk_load_${num_rows}_${timestamp}.log
 script_dir=$( cd "$( dirname "$0" )" && pwd )
+tmp_sql_script=/tmp/bulk_load_tmp_${timestamp}_${RANDOM}_${RANDOM}_${RANDOM}.sql
+trap EXIT cleanup
+sed "s/NUM_GROUPS/$num_groups" "$script_dir/bulk_load.sql" >"$tmp_sql_script"
 echo "Logging to $log_path"
 (
 cd "$yb_root"
 bin/yb-ctl wipe_restart
 git log -n 1
-bin/ysqlsh -f "$script_dir/bulk_load.sql"
+bin/ysqlsh -f "$tmp_sql_script"
 ) |& tee "$log_path"
 
 echo "Saved log to $log_path"
