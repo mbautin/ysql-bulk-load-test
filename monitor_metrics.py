@@ -65,8 +65,6 @@ def main():
             if first_ts is None:
                 first_ts = parsed_ts_from_log
 
-            delta_sec = abs((current_ts - parsed_ts_from_log).total_seconds())
-
             counter_value = int(match.group(2))
             logging.info(f"Counter value: {counter_value}")
             actual_time_str = current_ts.strftime(TIME_FORMAT)
@@ -75,22 +73,22 @@ def main():
             elapsed_time_sec = (parsed_ts_from_log - first_ts).total_seconds()
             logging.info("Elapsed time since first batch: %.3f sec", elapsed_time_sec)
             if prev_ts is not None:
-                time_since_last_batch = (parsed_ts_from_log - prev_ts).total_seconds()
-                logging.info("Time since previous batch: %.3f sec", time_since_last_batch)
-                if time_since_last_batch > 0:
+                time_since_last_batch_sec = (parsed_ts_from_log - prev_ts).total_seconds()
+                logging.info("Time since previous batch: %.3f sec", time_since_last_batch_sec)
+                if time_since_last_batch_sec > 0:
                     logging.info(
-                        "Rows inserted per second: %.3f",
-                        (counter_value - prev_counter) / time_since_last_batch)
+                        "Most recent rows inserted per second: %.3f",
+                        (counter_value - prev_counter) / time_since_last_batch_sec)
+                logging.info(
+                    "Approximate average rows inserted per second: %.3f",
+                    counter_value / elapsed_time_sec)
+
 
             prev_ts = parsed_ts_from_log
             prev_counter = counter_value
 
-            if delta_sec >= 2:
-                logging.warning(
-                    "LARGE DELTA BETWEEN CURRENT TIMESTAMP AND TIMESTAMP FROM LOG: %.3f sec",
-                    delta_sec)
-            else:
-                logging.info("Acceptable delta between timestamps: %.3f sec", delta_sec)
+            ts_delta_sec = (current_ts - parsed_ts_from_log).total_seconds()
+            logging.info("Delta between timestamps (should be small): %.3f sec", ts_delta_sec)
 
             # Execute show_metrics.sh and pipe output to the log
             try:
