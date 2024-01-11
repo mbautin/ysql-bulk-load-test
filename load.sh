@@ -25,7 +25,7 @@ cleanup() {
 
 num_rows=1000000
 yb_root=""
-should_restat=true
+should_restart=true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -93,7 +93,7 @@ ysqlsh_pid=$?
 python3 "$script_dir"/monitor_metrics.py \
   --process_id "$ysqlsh_pid" \
   --log_path "$log_path" \
-  --output_log_path "$metircs_log_path"
+  --output_log_path "$metrics_log_path"
 ) |& tee "$log_path"
 
 echo "Saved log to $log_path"
