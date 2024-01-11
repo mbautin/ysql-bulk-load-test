@@ -66,7 +66,7 @@ fi
 log_dir=~/logs/ysql_bulk_load
 mkdir -p "$log_dir"
 timestamp=$( date +%Y-%m-%dT%H_%M_%S )
-log_path=$log_dir/ysql_bulk_load_${num_rows}_${timestamp}.log
+log_path=$log_dir/ysql_bulk_load_${num_rows}_rows_${timestamp}.log
 script_dir=$( cd "$( dirname "$0" )" && pwd )
 tmp_sql_script=/tmp/bulk_load_tmp_${timestamp}_${RANDOM}_${RANDOM}_${RANDOM}.sql
 trap cleanup EXIT
