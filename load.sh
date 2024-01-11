@@ -81,6 +81,7 @@ tmp_sql_script=/tmp/bulk_load_tmp_${timestamp}_${RANDOM}_${RANDOM}_${RANDOM}.sql
 trap cleanup EXIT
 sed "s/NUM_GROUPS/$num_groups/" "$script_dir/bulk_load.sql" >"$tmp_sql_script"
 echo "Logging to $log_path"
+echo "Additional metrics logged to $metrics_log_path"
 (
 set -x
 cd "$yb_root"
@@ -89,11 +90,13 @@ if [[ ${should_restart} == "true" ]]; then
 fi
 git log -n 1
 bin/ysqlsh -f "$tmp_sql_script" &
-ysqlsh_pid=$?
+ysqlsh_pid=$!
+set +x
 python3 "$script_dir"/monitor_metrics.py \
   --process_id "$ysqlsh_pid" \
   --log_path "$log_path" \
   --output_log_path "$metrics_log_path"
+wait
 ) |& tee "$log_path"
 
 echo "Saved log to $log_path"
