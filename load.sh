@@ -13,6 +13,9 @@ Options:
 
   -r, --yb_root
     YugabyteDB source root directory or YugabyteDB binary distribution directory.
+
+  --no_restart
+    Do not restart the cluster.
 EOT
 }
 
@@ -22,6 +25,7 @@ cleanup() {
 
 num_rows=1000000
 yb_root=""
+should_restat=true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -35,6 +39,9 @@ while [[ $# -gt 0 ]]; do
     -r|--yb_root)
       yb_root=$2
       shift
+    ;;
+    --no_restart)
+      should_restart=false
     ;;
     *)
       echo >&2 "Invalid option: $1"
@@ -75,7 +82,9 @@ echo "Logging to $log_path"
 (
 set -x
 cd "$yb_root"
-bin/yb-ctl wipe_restart
+if [[ ${should_restart} == "true" ]]; then
+  bin/yb-ctl wipe_restart
+fi
 git log -n 1
 bin/ysqlsh -f "$tmp_sql_script"
 ) |& tee "$log_path"
