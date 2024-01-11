@@ -69,7 +69,7 @@ timestamp=$( date +%Y-%m-%dT%H_%M_%S )
 log_path=$log_dir/ysql_bulk_load_${num_rows}_${timestamp}.log
 script_dir=$( cd "$( dirname "$0" )" && pwd )
 tmp_sql_script=/tmp/bulk_load_tmp_${timestamp}_${RANDOM}_${RANDOM}_${RANDOM}.sql
-trap EXIT cleanup
+trap cleanup EXIT
 sed "s/NUM_GROUPS/$num_groups" "$script_dir/bulk_load.sql" >"$tmp_sql_script"
 echo "Logging to $log_path"
 (
