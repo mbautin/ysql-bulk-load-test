@@ -69,6 +69,8 @@ def main():
                 logging.warning(
                     "LARGE DELTA BETWEEN CURRENT TIMESTAMP AND TIMESTAMP FROM LOG: %.3f",
                     delta_sec)
+            else:
+                logging.info("Acceptable delta between timestamps: %.3f", delta_sec)
 
             # Execute show_metrics.sh and pipe output to the log
             try:
@@ -80,8 +82,6 @@ def main():
                 )
             except subprocess.CalledProcessError as exc:
                 logging.error(f"Error executing show_metrics.sh: {exc}")
-
-            time.sleep(1)
 
     log_file.close()
 
