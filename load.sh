@@ -73,7 +73,9 @@ fi
 log_dir=~/logs/ysql_bulk_load
 mkdir -p "$log_dir"
 timestamp=$( date +%Y-%m-%dT%H_%M_%S )
-log_path=$log_dir/ysql_bulk_load_${num_rows}_rows_${timestamp}.log
+log_path_prefix=$log_dir/ysql_bulk_load_${num_rows}_rows_${timestamp}
+log_path=$log_path_prefix.log
+metrics_log_path=${log_path_prefix}_metrics.log
 script_dir=$( cd "$( dirname "$0" )" && pwd )
 tmp_sql_script=/tmp/bulk_load_tmp_${timestamp}_${RANDOM}_${RANDOM}_${RANDOM}.sql
 trap cleanup EXIT
@@ -86,7 +88,12 @@ if [[ ${should_restart} == "true" ]]; then
   bin/yb-ctl wipe_restart
 fi
 git log -n 1
-bin/ysqlsh -f "$tmp_sql_script"
+bin/ysqlsh -f "$tmp_sql_script" &
+ysqlsh_pid=$?
+python3 "$script_dir"/monitor_metrics.py \
+  --process_id "$ysqlsh_pid" \
+  --log_path "$log_path" \
+  --output_log_path "$metircs_log_path"
 ) |& tee "$log_path"
 
 echo "Saved log to $log_path"
