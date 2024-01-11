@@ -31,6 +31,7 @@ while [[ $# -gt 0 ]]; do
     -r|--yb_root)
       yb_root=$2
       shift
+    ;;
     *)
       echo >&2 "Invalid option: $1"
       exit 1
