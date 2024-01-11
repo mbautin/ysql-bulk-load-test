@@ -8,7 +8,7 @@ do $$
 begin
   for counter in 1..NUM_GROUPS loop
     SELECT CURRENT_TIMESTAMP AS current_datetime;
-    raise notice '[%s] counter: %', (current_datetime, counter * 10000);
+    raise notice '[%s] counter: %', current_datetime, counter * 10000;
     insert into test_table (select gen_random_uuid(), gen_random_bytes(50)::text
                         from generate_series(1, 10000) i);
     commit;
