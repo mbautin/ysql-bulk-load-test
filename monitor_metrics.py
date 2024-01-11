@@ -52,10 +52,10 @@ def main():
         # Check if the line matches the counter pattern
         match = re.search(counter_pattern, line)
         if match:
-            timestamp_from_log = match.group(1)
-            if timestamp_from_log.endswith('+00s'):
-                timestamp_from_log = timestamp_from_log[:-4]
-            parsed_ts_from_log = datetime.strptime(timestamp_from_log, TIME_FORMAT)
+            timestamp_from_log_str = match.group(1)
+            if timestamp_from_log_str.endswith('+00s'):
+                timestamp_from_log_str = timestamp_from_log_str[:-4]
+            parsed_ts_from_log = datetime.strptime(timestamp_from_log_str, TIME_FORMAT)
             current_ts = datetime.now()
             delta_sec = abs((current_ts - parsed_ts_from_log).total_seconds())
 
@@ -63,7 +63,7 @@ def main():
             logging.info(f"Counter value: {counter_value}")
             actual_time_str = current_ts.strftime(TIME_FORMAT)
             logging.info(f"Current timestamp: {actual_time_str}")
-            logging.info(f"Timestamp from bulk load log: {timestamp_from_log}")
+            logging.info(f"Timestamp from bulk load log: {timestamp_from_log_str}")
 
             if delta_sec >= 2:
                 logging.warning(
@@ -81,7 +81,7 @@ def main():
             except subprocess.CalledProcessError as exc:
                 logging.error(f"Error executing show_metrics.sh: {exc}")
 
-            break
+            time.sleep(1)
 
     log_file.close()
 

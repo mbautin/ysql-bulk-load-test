@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-set -euo pipefail -x
+set -euo pipefail 
 
+set -x
+iostat
+
+set +x
 METRICS_RE="\
 rocksdb_bloom_filter_useful|\
 rocksdb_bloom_filter_checked|\
@@ -14,3 +18,4 @@ curl -s http://localhost:9000/prometheus-metrics |
   sed 's/expo.*9000..//' |
   sed 's/[0-9]*$//' |
   tr " " "\n"
+
