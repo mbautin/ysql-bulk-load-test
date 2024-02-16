@@ -11,12 +11,22 @@ Options:
   -n, --num_rows <num_rows>
     Number of rows to load.
 
+  -m, --global_memstore_mb <global_memstore_mb>
+    Total amount of memory to allocate to all memtables, in MiBs.
+
   -r, --yb_root
     YugabyteDB source root directory or YugabyteDB binary distribution directory.
 
   --no_restart
     Do not restart the cluster.
 EOT
+}
+
+add_tserver_flag() {
+  if [[ -n ${tserver_flags} ]]; then
+    tserver_flags+=","
+  fi
+  tserver_flags+=$1
 }
 
 cleanup() {
@@ -26,6 +36,7 @@ cleanup() {
 num_rows=1000000
 yb_root=""
 should_restart=true
+global_memstore_mb=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -42,6 +53,10 @@ while [[ $# -gt 0 ]]; do
     ;;
     --no_restart)
       should_restart=false
+    ;;
+    -m|--global_memstore_mb)
+      global_memstore_mb=$2
+      shift
     ;;
     *)
       echo >&2 "Invalid option: $1"
@@ -83,10 +98,21 @@ sed "s/NUM_GROUPS/$num_groups/" "$script_dir/bulk_load.sql" >"$tmp_sql_script"
 echo "Logging to $log_path"
 echo "Additional metrics logged to $metrics_log_path"
 (
-set -x
 cd "$yb_root"
 if [[ ${should_restart} == "true" ]]; then
-  bin/yb-ctl wipe_restart --tserver_flags="global_memstore_size_mb_max=128"
+  restart_cmd_line=( bin/yb-ctl wipe_restart )
+  tserver_flags=""
+  if [[ -n ${global_memstore_mb} ]]; then
+    add_tserver_flag "global_memstore_size_mb_max=$global_memstore_mb"
+  fi
+  if [[ -n ${tserver_flags} ]]; then
+    restart_cmd_line+=( --tserver_flags="$tserver_flags" )
+  fi
+  (
+    set -x
+    cd "$yb_root"  
+    "${restart_cmd_line[@]}"
+  ) 
 fi
 git log -n 1
 bin/ysqlsh -f "$tmp_sql_script" &
