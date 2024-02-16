@@ -86,7 +86,7 @@ echo "Additional metrics logged to $metrics_log_path"
 set -x
 cd "$yb_root"
 if [[ ${should_restart} == "true" ]]; then
-  bin/yb-ctl wipe_restart
+  bin/yb-ctl wipe_restart --tserver_flags="global_memstore_size_mb_max=128"
 fi
 git log -n 1
 bin/ysqlsh -f "$tmp_sql_script" &
