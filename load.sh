@@ -14,6 +14,9 @@ Options:
   -m, --global_memstore_mb <global_memstore_mb>
     Total amount of memory to allocate to all memtables, in MiBs.
 
+  -f, --tserver_flags <tserver_flags>
+    Specify additional tablet server flags in the format suitable for yb-ctl.
+
   -r, --yb_root
     YugabyteDB source root directory or YugabyteDB binary distribution directory.
 
@@ -37,6 +40,7 @@ num_rows=1000000
 yb_root=""
 should_restart=true
 global_memstore_mb=""
+tserver_flags=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -56,6 +60,14 @@ while [[ $# -gt 0 ]]; do
     ;;
     -m|--global_memstore_mb)
       global_memstore_mb=$2
+      if [[ ! $global_memstore_mb =~ ^[0-9]+$ ]]; then
+        echo >&2 "Invalid format for --global_memstore_mb value: $global_memstore_mb"
+        exit 1
+      fi
+      shift
+    ;;
+    -f|--tserver_flags)
+      tserver_flags=$2
       shift
     ;;
     *)
@@ -101,7 +113,6 @@ echo "Additional metrics logged to $metrics_log_path"
 cd "$yb_root"
 if [[ ${should_restart} == "true" ]]; then
   restart_cmd_line=( bin/yb-ctl wipe_restart )
-  tserver_flags=""
   if [[ -n ${global_memstore_mb} ]]; then
     add_tserver_flag "global_memstore_size_mb_max=$global_memstore_mb"
   fi
